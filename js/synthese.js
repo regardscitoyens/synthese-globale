@@ -1,6 +1,4 @@
 /* TODO:
-- fix image title
-- clean names + order indicateurs
 - autocomplete search
 - select indicateur:
  + min/max/mean/median + /time (week or month or year?)
@@ -12,6 +10,20 @@
 
 
 var deputes = {},
+  indicateurs = [
+    ["semaines_presence", "Semaines d'activité"],
+    ["commission_presences", "Commissions &mdash; réunions"],
+    ["commission_interventions", "Commissions &mdash; interventions"],
+    ["hemicycle_interventions", "Hémicycle &mdash; interventions longues"],
+    ["hemicycle_interventions_courtes", "Hémicycle &mdash; interventions longues"],
+    ["amendements_signes", "Amendements signés"],
+    ["amendements_adoptes", "Amendements adoptés"],
+    ["rapports", "Rapports"],
+    ["propositions_ecrites", "Propositions de loi écrites"],
+    ["propositions_signees", "Propositions de loi signées"],
+    ["questions_orales", "Questions orales"],
+    ["questions_ecrites", "Questions écrites"]
+  ],
   start = [6, 12],
   end = [(new Date()).getMonth() + 1, (new Date()).getFullYear() - 2000];
   month = function(){
@@ -44,14 +56,12 @@ var deputes = {},
       sel = selec.options[selec.selectedIndex].value;
     d3.select("#data").html("").append("ul")
       .selectAll("li")
-      .data(Object.keys(deputes[sel]).filter(function(d){
-        return d != "photo";
-      }))
+      .data(indicateurs)
       .enter().append("li")
       .html(function(d) {
-        return d + " : <span>" + deputes[sel][d] + "</span>";
+        return d[1] + " : <span>" + deputes[sel][d[0]] + "</span>";
       });
-    d3.select("#photo").html('<img src="' + deputes[sel].photo + '" alt="' + sel + '" title="' + sel + '"/>');
+    d3.select("#photo").html('<img src="' + deputes[sel].photo + '" alt="' + deputes[sel].nom + '" title="' + deputes[sel].nom + '"/>');
   };
 
 while (start[0] != end[0] || start[1] != end[1]) {
@@ -78,7 +88,9 @@ d3.json("http://www.nosdeputes.fr/deputes/json", function(error, data){
       return d.depute.nom_de_famille + ' ' + d.depute.prenom + ' (' + d.depute.groupe_sigle + ')';
     });
   data.deputes.forEach(function(d){
-    if (deputes[d.depute.id] == undefined) deputes[d.depute.id] = {};
+    if (deputes[d.depute.id] == undefined) deputes[d.depute.id] = d.depute;
+    else for (var key in d.depute)
+      deputes[d.depute.id][key] = d.depute[attrname];
     deputes[d.depute.id].photo = d.depute.url_nosdeputes.replace('.fr/', '.fr/depute/photo/') + '/110';
   });
 });

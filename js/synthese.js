@@ -47,14 +47,15 @@
   ns.deputes = {};
   ns.downloadDeputes = function(){
     d3.json("http://www.nosdeputes.fr/deputes/json", function(error, data){
-      data.deputes.forEach(function(d){
-        d.depute.months = (ns.readdate(d.depute.mandat_fin) - ns.readdate(d.depute.mandat_debut)) / 2628000000;
-        if (ns.deputes[d.depute.id] == undefined)
-          ns.deputes[d.depute.id] = d.depute;
-        else for (var key in d.depute)
-          ns.deputes[d.depute.id][key] = d.depute[key];
-        ns.deputes[d.depute.id].photo = (d.depute.url_nosdeputes + '/100')
-          .replace('.fr/', '.fr/depute/photo/');
+      data.deputes.forEach(function(dep){
+        var d = dep.depute;
+        d.months = (ns.readdate(d.mandat_fin) - ns.readdate(d.mandat_debut)) / 2628000000;
+        d.display = d.prenom + ' ' + d.nom_de_famille + ' (' + d.groupe_sigle + ')';
+        d.photo = (d.url_nosdeputes + '/100').replace('.fr/', '.fr/depute/photo/');
+        if (ns.deputes[d.id] == undefined)
+          ns.deputes[d.id] = d;
+        else for (var key in d)
+          ns.deputes[d.id][key] = d[key];
       });
     });
   };
@@ -116,11 +117,9 @@
           ns.deputesAr.sort(function(a, b){
             return d3.ascending(a.nom_de_famille, b.nom_de_famille);
           }).map(function(d){
-            var name = d.nom_de_famille + ' ' + d.prenom +
-                     ' (' + d.groupe_sigle + ')';
             return {
-              label: name,
-              value: name,
+              label: d.display,
+              value: d.display,
               dep: d
             };
           }),
@@ -142,8 +141,7 @@
   };
 
   ns.displayMP = function(){
-    $("#name").text(ns.dep.prenom + ' ' + ns.dep.nom_de_famille +
-      ' (' + ns.dep.groupe_sigle + ')');
+    $("#name").text(ns.dep.display);
     d3.select("#data").html("")
       .append("table")
       .append("tbody")
@@ -151,6 +149,7 @@
       .selectAll("tr")
       .data(ns.indicateurs)
       .enter().append('tr')
+      .attr('id', function(d){ return d[0] })
       .attr('class', 'ind')
       .html(function(d) {
         return '<th>' + d[1] + "</th>" +
@@ -171,7 +170,7 @@
       '<br/><small>NosDéputés.fr</small></a>' +
       '<br/><span>' + ns.fmtfloat(ns.dep.months) + ' mois de mandat'
     );
-    $("#data table tr")[1].click();
+    $("#data table tr#" + ns.ind).click();
   };
 
   ns.drawComparison = function(){
@@ -199,13 +198,14 @@
           return (depval >= d.x && depval < d.x + d.dx) ? "#00FF00" : "#4444FF";
         })
         .margin({top: 10, right: 20, bottom: 5, left: 110})
+        .tooltips(false)
         .showYAxis(false)
         .showLegend(false)
         .showControls(false)
         .showValues(true)
         .valueFormat(function(d){
           var real = parseInt(d * d);
-          return real + " député" + (real > 1 ? "s" : "");
+          return (real ? real + " député" + (real > 1 ? "s" : "") : "");
         });
 
       d3.select('#comparison svg').html('')
@@ -239,7 +239,7 @@
         .tooltips(false)
         .showValues(true)
         .valueFormat(function(d){ return parseInt(d) });
-      chart.xAxis.tickFormat(function(d){ return d.replace(/^20(..)/, "$1/") });
+      chart.xAxis.tickFormat(function(d){ return d.replace(/^20(..)(..)/, "$2/$1") });
 
       d3.select('#timeline svg')
         .datum([

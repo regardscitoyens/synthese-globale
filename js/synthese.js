@@ -225,7 +225,7 @@
       if (ns.dep[ns.ind] != undefined) {
         if (!start && d > ns.dep.mandat_debut.replace(/-/g, '')) start = true;
         if (start)
-          data.push({ label: d, value: ns.dep[ns.ind] ? ns.dep[ns.ind].months[d] : 0 });
+          data.push({ label: d, value: ns.dep[ns.ind] && ns.dep[ns.ind].months[d] ? ns.dep[ns.ind].months[d] : 0 });
       } else if (start && (!ns.dep.mandat_fin || d < ns.dep.mandat_fin.replace(/-/g, '')))
         data.push({ label: d, value: 0 });
     });
@@ -247,7 +247,7 @@
         ])
         .transition().duration(350)
         .call(chart);
-      $("g text:contains(NaN)").remove();
+
       nv.utils.windowResize(chart.update);
     });
   };

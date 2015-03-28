@@ -185,7 +185,7 @@
           d3.scale.linear()
           .domain([min, max])
           .range([0, 280])
-          .ticks(Math.min(Math.round(max - min), 10))
+          .ticks(Math.min(Math.round(max - min + 2), 10))
         )(ns.deputesAr.map(accessindic))
         .reverse();
 

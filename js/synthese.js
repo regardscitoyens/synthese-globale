@@ -174,8 +174,9 @@
     $("#data table tr")[1].click();
   };
 
-  ns.drawComparison = function(monthly){
-    var accessindic = function(d){
+  ns.drawComparison = function(){
+    var monthly = $("input[name=stats]:checked").val() === "month",
+      accessindic = function(d){
         return d[ns.ind] ? d[ns.ind].total / (monthly ? d.months : 1) : 0;
       },
       min = d3.min(ns.deputesAr, accessindic),
@@ -256,7 +257,7 @@
     ns.downloadSynthese();
     $("input[name=stats]").change(function(d){
       console.log(d, this);
-      ns.drawComparison($(this).val() === "month");
+      ns.drawComparison();
     });
   };
 

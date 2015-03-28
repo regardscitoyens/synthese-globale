@@ -38,10 +38,18 @@
     return ret;
   };
 
+  ns.readdate = function(d){
+    return d ? d3.time.format("%Y-%m-%d").parse(d) : new Date();
+  };
+  ns.fmtfloat = function(f) {
+    return d3.format(".1f")(f).replace('.', ',');
+  };
+
   ns.deputes = {};
   ns.downloadDeputes = function() {
     d3.json("http://www.nosdeputes.fr/deputes/json", function(error, data){
       data.deputes.forEach(function(d){
+        d.depute.months = (ns.readdate(d.depute.mandat_fin) - ns.readdate(d.depute.mandat_debut)) / 2628000000;
         if (ns.deputes[d.depute.id] == undefined)
           ns.deputes[d.depute.id] = d.depute;
         else for (var key in d.depute)
@@ -63,8 +71,11 @@
           Object.keys(d.depute).forEach(function(k){
             if (k != "id" && k != "nom" && k != "groupe") {
               if (ns.deputes[d.depute.id][k] == undefined)
-                ns.deputes[d.depute.id][k] = 0;
-              ns.deputes[d.depute.id][k] += parseInt(d.depute[k]); 
+                ns.deputes[d.depute.id][k] = {
+                  total: 0,
+                };
+              var v = parseInt(d.depute[k]);
+              ns.deputes[d.depute.id][k].total += v;
             }
           });
         });
@@ -126,18 +137,24 @@
   ns.displayMP = function(sel) {
     $("#name").text(ns.deputes[sel].prenom + ' ' + ns.deputes[sel].nom_de_famille +
       ' (' + ns.deputes[sel].groupe_sigle + ')');
-    d3.select("#data").html("").append("ul")
-      .selectAll("li")
+    d3.select("#data").html("")
+      .append("table")
+      .append("tbody")
+      .html("<tr><th></th><td>total</td><td>moyenne<br/>par mois</td></tr>")
+      .selectAll("tr")
       .data(ns.indicateurs)
-      .enter().append("li")
+      .enter().append("tr")
       .html(function(d) {
-        return d[1] + " : <span>" + ns.deputes[sel][d[0]] + "</span>";
+        return '<th>' + d[1] + "</th>" +
+               '<td>' + ns.deputes[sel][d[0]].total + "</td>" +
+               '<td>' + ns.fmtfloat(ns.deputes[sel][d[0]].total / ns.deputes[sel].months) + "</td>";
       });
     d3.select("#photo").html(
       '<a href="' + ns.deputes[sel].url_nosdeputes + '">' +
       '<img src="' + ns.deputes[sel].photo + '"' +
           ' alt="' + ns.deputes[sel].nom + '" title="' + ns.deputes[sel].nom + '"/>' +
-      '<br/><small>NosDéputés.fr</small></a>'
+      '<br/><small>NosDéputés.fr</small></a>' +
+      '<br/><span>' + ns.fmtfloat(ns.deputes[sel].months) + ' mois de mandat'
     );
   };
 

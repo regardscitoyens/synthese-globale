@@ -25,11 +25,13 @@ p{
   float: right;
   width: 550px;
 }
-#data ul li{
+#data table{
+  width: 100%;
+}
+#data table tr th{
+  font-weight: normal;
   text-align: left;
 }
-#data ul li span{
-  float: right;
-  text-align: right;
-};
-
+#data table tr td{
+  text-align: center;
+}

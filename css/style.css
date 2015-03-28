@@ -13,7 +13,7 @@ h2{
   margin-bottom: 0px;
   margin-left: 30px;
 }
-#row{
+.row{
   clear:both;
 }
 #menu{
@@ -52,5 +52,10 @@ h2{
 }
 #comparison svg{
   width: 360px;
+  height: 300px;
+}
+#timeline{
+  clear:both;
+  width: 800px;
   height: 300px;
 }

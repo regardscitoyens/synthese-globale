@@ -1,12 +1,10 @@
 /* TODO:
 - fix mandats repris
-- select indicateur:
- + histogram through time for mp
 - filter time (from bottom histo?)
 - handle current mps only?
 - by group?
 */
-(function (ns) {
+(function (ns){
 
   ns.ind = "semaines_presence";
   ns.indicateurs = [,
@@ -32,7 +30,7 @@
     "ô": "o", "ö": "o",
     "ù": "u", "û": "u", "ü": "u"
   };
-  ns.clean_accents = function(term) {
+  ns.clean_accents = function(term){
     var ret = "";
     for (var i = 0; i < term.length; i++)
       ret += ns.accentMap[term.charAt(i)] || term.charAt(i);
@@ -42,12 +40,12 @@
   ns.readdate = function(d){
     return d ? d3.time.format("%Y-%m-%d").parse(d) : new Date();
   };
-  ns.fmtfloat = function(f) {
+  ns.fmtfloat = function(f){
     return d3.format(".1f")(f).replace('.', ',');
   };
 
   ns.deputes = {};
-  ns.downloadDeputes = function() {
+  ns.downloadDeputes = function(){
     d3.json("http://www.nosdeputes.fr/deputes/json", function(error, data){
       data.deputes.forEach(function(d){
         d.depute.months = (ns.readdate(d.depute.mandat_fin) - ns.readdate(d.depute.mandat_debut)) / 2628000000;
@@ -61,9 +59,11 @@
     });
   };
 
-  ns.downloadMonthApi = function(start, timeout, last) {
+  ns.allmonths = [];
+  ns.downloadMonthApi = function(start, timeout, last){
     var m = "20" + start[1] +
             (String(start[0]).length < 2 ? "0" : "") + start[0];
+    ns.allmonths.push(m);
     setTimeout(function(){
       d3.json("http://www.nosdeputes.fr/synthese/"+m+"/json", function(e, data){
         data.deputes.forEach(function(d){
@@ -74,16 +74,16 @@
               if (ns.deputes[d.depute.id][k] == undefined)
                 ns.deputes[d.depute.id][k] = {
                   total: 0,
+                  months: {}
                 };
               var v = parseInt(d.depute[k]);
               ns.deputes[d.depute.id][k].total += v;
+              ns.deputes[d.depute.id][k].months[m] = v;
             }
           });
         });
-        // Save data in local storage & enable interface after last load
+        // Enable interface after last load
         if (last) {
-          localStorage.setItem('dataUpdate', new Date().getTime());
-          localStorage.setItem('deputes', JSON.stringify(ns.deputes));
           ns.deputesAr = Object.keys(ns.deputes).map(function(d){
             return ns.deputes[d];
           });
@@ -94,7 +94,7 @@
     }, timeout);
   };
 
-  ns.downloadSynthese = function() {
+  ns.downloadSynthese = function(){
     var timeout = 0,
         start = [6, 12],
         end = [(new Date()).getMonth() + 1, (new Date()).getFullYear() - 2000];
@@ -108,14 +108,14 @@
     ns.downloadMonthApi(start, timeout, true);
   };
 
-  ns.buildSelectMenu = function() {
+  ns.buildSelectMenu = function(){
     $("#deputes").autocomplete({
-      source: function(request, response) {
+      source: function(request, response){
         var matcher = new RegExp($.ui.autocomplete.escapeRegex(ns.clean_accents(request.term)), "i");
         response($.grep(
           ns.deputesAr.sort(function(a, b){
             return d3.ascending(a.nom_de_famille, b.nom_de_famille);
-          }).map(function(d) {
+          }).map(function(d){
             var name = d.nom_de_famille + ' ' + d.prenom +
                      ' (' + d.groupe_sigle + ')';
             return {
@@ -124,12 +124,12 @@
               dep: d
             };
           }),
-          function(d) {
+          function(d){
             return matcher.test(ns.clean_accents(d.label));
           }
         ));
       },
-      select: function(event, ui) {
+      select: function(event, ui){
         event.preventDefault();
         ns.dep = ui.item.dep;
         ns.displayMP();
@@ -141,7 +141,7 @@
     ns.displayMP();
   };
 
-  ns.displayMP = function() {
+  ns.displayMP = function(){
     $("#name").text(ns.dep.prenom + ' ' + ns.dep.nom_de_famille +
       ' (' + ns.dep.groupe_sigle + ')');
     d3.select("#data").html("")
@@ -162,6 +162,7 @@
         $('#data table tr.ind').css("background-color", "white");
         $(this).css("background-color", "yellow");
         ns.drawComparison();
+        ns.drawTimeline();
       });
     $("#photo").html(
       '<a href="' + ns.dep.url_nosdeputes + '">' +
@@ -188,11 +189,11 @@
         )(ns.deputesAr.map(accessindic))
         .reverse();
 
-    nv.addGraph(function() {
+    nv.addGraph(function(){
       var chart = nv.models.multiBarHorizontalChart()
         .x(function(d) { return d.x + " -> " + (d.x + d.dx) })
         .y(function(d) { return Math.sqrt(d.y) })
-        .barColor(function(d) {
+        .barColor(function(d){
           var depval = accessindic(ns.dep);
           return (depval >= d.x && depval < d.x + d.dx) ? "#00FF00" : "#4444FF";
         })
@@ -217,16 +218,44 @@
     });
   };
 
-  ns.init = function() {
-    var update = parseInt(localStorage.getItem('dataUpdate')) + 86400000;
-    if ((new Date()).getTime() < update) {
-      ns.deputes = JSON.parse(localStorage.getItem('deputes'));
-      ns.buildSelectMenu();
-    } else {
-      ns.downloadDeputes();
-      ns.downloadSynthese();
-    }
+  ns.drawTimeline = function(){
+    var data = [], start = false;
+    ns.allmonths.forEach(function(d){
+      if (ns.dep[ns.ind] != undefined) {
+        if (!start && d > ns.dep.mandat_debut.replace(/-/g, '')) start = true;
+        if (start)
+          data.push({ label: d, value: ns.dep[ns.ind] ? ns.dep[ns.ind].months[d] : 0 });
+      } else if (start && (!ns.dep.mandat_fin || d < ns.dep.mandat_fin.replace(/-/g, '')))
+        data.push({ label: d, value: 0 });
+    });
+
+    $('#timeline svg').empty();
+    nv.addGraph(function(){
+      var chart = nv.models.discreteBarChart()
+        .x(function(d){ return d.label })
+        .y(function(d){ return d.value })
+        .staggerLabels(true)
+        .tooltips(false)
+        .showValues(true)
+        .valueFormat(function(d){ return parseInt(d) });
+      chart.xAxis.tickFormat(function(d){ return d.replace(/^20(..)/, "$1/") });
+
+      d3.select('#timeline svg')
+        .datum([
+          {key: ' ', values: data}
+        ])
+        .transition().duration(350)
+        .call(chart);
+      $("g text:contains(NaN)").remove();
+      nv.utils.windowResize(chart.update);
+    });
+  };
+
+  ns.init = function(){
+    ns.downloadDeputes();
+    ns.downloadSynthese();
     $("input[name=stats]").change(function(d){
+      console.log(d, this);
       ns.drawComparison($(this).val() === "month");
     });
   };

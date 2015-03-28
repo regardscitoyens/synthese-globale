@@ -27,8 +27,7 @@
 
   ns.start = [6, 12];
   ns.end = [(new Date()).getMonth() + 1, (new Date()).getFullYear() - 2000];
-  ns.timeout = 0;
-  ns.download = function(last) {
+  ns.downloadMonthApi = function(timeout, last) {
     var m = "20" + ns.start[1] +
             (String(ns.start[0]).length < 2 ? "0" : "") + ns.start[0];
     setTimeout(function(){
@@ -44,16 +43,16 @@
             }
           });
         });
+        // Enable interface after last load
         if (last) {
           document.getElementById("loader").style.display = "none";
           document.getElementById("menu").style.display = "";
         }
       });
-    }, ns.timeout);
-    ns.timeout += 110;
+    }, timeout);
   };
   
-  ns.displayTop = function() {
+  ns.displayMP = function() {
     var selec = document.getElementById("deputes"),
       sel = selec.options[selec.selectedIndex].value;
     d3.select("#data").html("").append("ul")
@@ -71,18 +70,24 @@
 
   ns.init = function() {
   
+    // Start downloading synthese per month every 110ms
+    var timeout = 0;
     while (ns.start[0] != ns.end[0] || ns.start[1] != ns.end[1]) {
-      ns.download();
+      ns.downloadMonthApi(timeout);
       if (ns.start[0] == 12) {
         ns.start = [1, ns.start[1]+1];
       } else ns.start[0]++;
+      timeout += 110;
     }
-    ns.download(true);
-  
+    ns.downloadMonthApi(timeout, true);
+
+    // Download députés data simultaneously
     d3.json("http://www.nosdeputes.fr/deputes/json", function(error, data){
-      var select = d3.select("#menu").append("select")
+
+      // Build select menu from list députés
+      d3.select("#menu").append("select")
         .attr("id", "deputes")
-        .on("change", ns.displayTop)
+        .on("change", ns.displayMP)
         .selectAll('option')
         .data(data.deputes.sort(function(a, b){
           return d3.ascending(a.depute.nom_de_famille, b.depute.nom_de_famille);
@@ -95,6 +100,8 @@
           return d.depute.nom_de_famille + ' ' + d.depute.prenom +
                  ' (' + d.depute.groupe_sigle + ')';
         });
+
+      // Populate data with députés meta
       data.deputes.forEach(function(d){
         if (ns.deputes[d.depute.id] == undefined)
           ns.deputes[d.depute.id] = d.depute;
@@ -103,6 +110,7 @@
         ns.deputes[d.depute.id].photo = (d.depute.url_nosdeputes + '/110')
           .replace('.fr/', '.fr/depute/photo/');
       });
+
     });
 
   }();

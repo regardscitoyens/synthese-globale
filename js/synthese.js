@@ -1,4 +1,5 @@
 /* TODO:
+- fix mandats repris
 - select indicateur:
  + min/max/mean/median + /time (week or month or year?)
  + histogram through time for mp
@@ -13,7 +14,7 @@
     ["commission_presences", "Commissions &mdash; réunions"],
     ["commission_interventions", "Commissions &mdash; interventions"],
     ["hemicycle_interventions", "Hémicycle &mdash; interventions longues"],
-    ["hemicycle_interventions_courtes", "Hémicycle &mdash; interventions longues"],
+    ["hemicycle_interventions_courtes", "Hémicycle &mdash; interventions courtes"],
     ["amendements_signes", "Amendements signés"],
     ["amendements_adoptes", "Amendements adoptés"],
     ["rapports", "Rapports"],
@@ -54,7 +55,7 @@
           ns.deputes[d.depute.id] = d.depute;
         else for (var key in d.depute)
           ns.deputes[d.depute.id][key] = d.depute[key];
-        ns.deputes[d.depute.id].photo = (d.depute.url_nosdeputes + '/110')
+        ns.deputes[d.depute.id].photo = (d.depute.url_nosdeputes + '/100')
           .replace('.fr/', '.fr/depute/photo/');
       });
     });

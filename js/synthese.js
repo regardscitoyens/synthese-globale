@@ -1,5 +1,4 @@
 /* TODO:
-- autocomplete search
 - select indicateur:
  + min/max/mean/median + /time (week or month or year?)
  + histogram through time for mp
@@ -23,6 +22,21 @@
     ["questions_orales", "Questions orales"],
     ["questions_ecrites", "Questions écrites"]
   ];
+
+  ns.accentMap = {
+    "á": "a", "à": "a", "â": "a",
+    "é": "e", "è": "e", "ê": "e", "ë": "e",
+    "ç": "c",
+    "î": "i", "ï": "i",
+    "ô": "o", "ö": "o",
+    "ù": "u", "û": "u", "ü": "u"
+  };
+  ns.clean_accents = function(term) {
+    var ret = "";
+    for (var i = 0; i < term.length; i++)
+      ret += ns.accentMap[term.charAt(i)] || term.charAt(i);
+    return ret;
+  };
 
   ns.deputes = {};
   ns.downloadDeputes = function() {
@@ -79,27 +93,39 @@
   };
  
   ns.buildSelectMenu = function() {
-    d3.select("#menu").append("select")
-      .attr("id", "deputes")
-      .on("change", ns.displayMP)
-      .selectAll('option')
-      .data(Object.keys(ns.deputes).sort(function(a, b){
-        return d3.ascending(ns.deputes[a].nom_de_famille, ns.deputes[b].nom_de_famille);
-      }))
-      .enter().append("option")
-      .attr("value", function(d) {
-        return d;
-      })
-      .text(function(d) {
-        return ns.deputes[d].nom_de_famille + ' ' + ns.deputes[d].prenom +
-               ' (' + ns.deputes[d].groupe_sigle + ')';
-      });
-      $("#loader").hide();
-      $("#menu").show();
+    $("#deputes").autocomplete({
+      source: function(request, response) {
+        var matcher = new RegExp($.ui.autocomplete.escapeRegex(ns.clean_accents(request.term)), "i");
+        response($.grep(
+          Object.keys(ns.deputes).sort(function(a, b){
+            return d3.ascending(ns.deputes[a].nom_de_famille, ns.deputes[b].nom_de_famille);
+          }).map(function(d) {
+            var name = ns.deputes[d].nom_de_famille + ' ' + ns.deputes[d].prenom +
+                     ' (' + ns.deputes[d].groupe_sigle + ')';
+            return {
+              label: name,
+              value: name,
+              id: d
+            };
+          }),
+          function(d) {
+            return matcher.test(ns.clean_accents(d.label));
+          }
+        ));
+      },
+      select: function(event, ui) {
+        event.preventDefault();
+        ns.displayMP(ui.item.id);
+      }
+    });
+
+    $("#loader").hide();
+    $("#menu").show();
   };
 
-  ns.displayMP = function() {
-    var sel = $("#deputes").val();
+  ns.displayMP = function(sel) {
+    $("#name").text(ns.deputes[sel].prenom + ' ' + ns.deputes[sel].nom_de_famille +
+      ' (' + ns.deputes[sel].groupe_sigle + ')');
     d3.select("#data").html("").append("ul")
       .selectAll("li")
       .data(ns.indicateurs)
@@ -109,7 +135,7 @@
       });
     d3.select("#photo").html(
       '<img src="' + ns.deputes[sel].photo + '"' +
-          ' alt="' + deputes[sel].nom + '" title="' + deputes[sel].nom + '"/>'
+          ' alt="' + ns.deputes[sel].nom + '" title="' + ns.deputes[sel].nom + '"/>'
     );
   };
 

@@ -2,16 +2,22 @@
 <head>
   <meta charset="utf-8">
   <title>Synthèse globale sur toute la législature</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui-smoothness.css">
 </head>
 <body>
   <h1>Synthèse globale sur toute la législature</h1>
   <p id="loader">Chargement...</p>
-  <div id="menu" style="display: none"></div>
+  <div id="menu" class="ui-widget" style="display: none">
+    <label for="deputes">Député : </label>
+    <input id="deputes">
+  </div>
+  <h2 id="name"></h2>
   <div id="photo"></div>
   <div id="data"></div>
-  <script src="js/jquery-1.11.2.min.js"></script>
-  <script src="js/d3-3.5.5.min.js"></script>
-  <script src="js/synthese.js"></script>
+  <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.11.4.autocomplete.js"></script>
+  <script type="text/javascript" src="js/d3-3.5.5.min.js"></script>
+  <script type="text/javascript" src="js/synthese.js"></script>
 </body>
 </html>

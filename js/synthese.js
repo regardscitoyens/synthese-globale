@@ -236,7 +236,7 @@
         .x(function(d){ return d.label })
         .y(function(d){ return d.value })
         .staggerLabels(true)
-        .margin({top: 25, right: 0, bottom: 40, left: 0})
+        .margin({top: 25, right: 5, bottom: 40, left: 25})
         .tooltips(false)
         .showYAxis(false)
         .showValues(true)

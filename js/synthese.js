@@ -134,8 +134,10 @@
         return d[1] + " : <span>" + ns.deputes[sel][d[0]] + "</span>";
       });
     d3.select("#photo").html(
+      '<a href="' + ns.deputes[sel].url_nosdeputes + '">' +
       '<img src="' + ns.deputes[sel].photo + '"' +
-          ' alt="' + ns.deputes[sel].nom + '" title="' + ns.deputes[sel].nom + '"/>'
+          ' alt="' + ns.deputes[sel].nom + '" title="' + ns.deputes[sel].nom + '"/>' +
+      '<br/><small>NosDéputés.fr</small></a>'
     );
   };
 

@@ -230,18 +230,20 @@
         data.push({ label: d, value: 0 });
     });
 
-    $('#timeline svg').empty();
+    if (!data.length) return $('#timeline svg').empty();
     nv.addGraph(function(){
       var chart = nv.models.discreteBarChart()
         .x(function(d){ return d.label })
         .y(function(d){ return d.value })
         .staggerLabels(true)
+        .margin({top: 25, right: 0, bottom: 40, left: 0})
         .tooltips(false)
+        .showYAxis(false)
         .showValues(true)
-        .valueFormat(function(d){ return parseInt(d) });
+        .valueFormat(function(d){ return (d ? parseInt(d) : "") });
       chart.xAxis.tickFormat(function(d){ return d.replace(/^20(..)(..)/, "$2/$1") });
 
-      d3.select('#timeline svg')
+      d3.select('#timeline svg').html('')
         .datum([
           {key: ' ', values: data}
         ])

@@ -1,5 +1,4 @@
 /* TODO:
-- fix style
 - fix image title
 - clean names + order indicateurs
 - autocomplete search

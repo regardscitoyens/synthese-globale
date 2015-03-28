@@ -1,14 +1,14 @@
 /* TODO:
 - fix mandats repris
 - select indicateur:
- + min/max/mean/median + /time (week or month or year?)
  + histogram through time for mp
- + histogram deciles by time of all mps with bin highlighted
+- filter time (from bottom histo?)
 - handle current mps only?
 - by group?
 */
 (function (ns) {
 
+  ns.ind = "semaines_presence";
   ns.indicateurs = [,
     ["semaines_presence", "Semaines d'activité"],
     ["commission_presences", "Commissions &mdash; réunions"],
@@ -84,6 +84,10 @@
         if (last) {
           localStorage.setItem('dataUpdate', new Date().getTime());
           localStorage.setItem('deputes', JSON.stringify(ns.deputes));
+          ns.deputesAr = Object.keys(ns.deputes).map(function(d){
+            return ns.deputes[d];
+          });
+          ns.dep = ns.deputesAr[parseInt(Math.random() * ns.deputesAr.length)];
           ns.buildSelectMenu();
         }
       });
@@ -103,21 +107,21 @@
     }
     ns.downloadMonthApi(start, timeout, true);
   };
- 
+
   ns.buildSelectMenu = function() {
     $("#deputes").autocomplete({
       source: function(request, response) {
         var matcher = new RegExp($.ui.autocomplete.escapeRegex(ns.clean_accents(request.term)), "i");
         response($.grep(
-          Object.keys(ns.deputes).sort(function(a, b){
-            return d3.ascending(ns.deputes[a].nom_de_famille, ns.deputes[b].nom_de_famille);
+          ns.deputesAr.sort(function(a, b){
+            return d3.ascending(a.nom_de_famille, b.nom_de_famille);
           }).map(function(d) {
-            var name = ns.deputes[d].nom_de_famille + ' ' + ns.deputes[d].prenom +
-                     ' (' + ns.deputes[d].groupe_sigle + ')';
+            var name = d.nom_de_famille + ' ' + d.prenom +
+                     ' (' + d.groupe_sigle + ')';
             return {
               label: name,
               value: name,
-              id: d
+              dep: d
             };
           }),
           function(d) {
@@ -127,36 +131,90 @@
       },
       select: function(event, ui) {
         event.preventDefault();
-        ns.displayMP(ui.item.id);
+        ns.dep = ui.item.dep;
+        ns.displayMP();
       }
     });
 
     $("#loader").hide();
-    $("#menu").show();
+    $("#content").show();
+    ns.displayMP();
   };
 
-  ns.displayMP = function(sel) {
-    $("#name").text(ns.deputes[sel].prenom + ' ' + ns.deputes[sel].nom_de_famille +
-      ' (' + ns.deputes[sel].groupe_sigle + ')');
+  ns.displayMP = function() {
+    $("#name").text(ns.dep.prenom + ' ' + ns.dep.nom_de_famille +
+      ' (' + ns.dep.groupe_sigle + ')');
     d3.select("#data").html("")
       .append("table")
       .append("tbody")
-      .html("<tr><th></th><td>total</td><td>moyenne<br/>par mois</td></tr>")
+      .html("<tr><th></th><td>total</td><td>moyenne<br/>mensuelle</td></tr>")
       .selectAll("tr")
       .data(ns.indicateurs)
-      .enter().append("tr")
+      .enter().append('tr')
+      .attr('class', 'ind')
       .html(function(d) {
         return '<th>' + d[1] + "</th>" +
-               '<td>' + ns.deputes[sel][d[0]].total + "</td>" +
-               '<td>' + ns.fmtfloat(ns.deputes[sel][d[0]].total / ns.deputes[sel].months) + "</td>";
+               '<td>' + (ns.dep[d[0]] ? ns.dep[d[0]].total : 0) + "</td>" +
+               '<td>' + (ns.dep[d[0]] ? ns.fmtfloat(ns.dep[d[0]].total / ns.dep.months) : 0) + "</td>";
+      })
+      .on("click", function(d){
+        ns.ind = d[0];
+        $('#data table tr.ind').css("background-color", "white");
+        $(this).css("background-color", "yellow");
+        ns.drawComparison();
       });
-    d3.select("#photo").html(
-      '<a href="' + ns.deputes[sel].url_nosdeputes + '">' +
-      '<img src="' + ns.deputes[sel].photo + '"' +
-          ' alt="' + ns.deputes[sel].nom + '" title="' + ns.deputes[sel].nom + '"/>' +
+    $("#photo").html(
+      '<a href="' + ns.dep.url_nosdeputes + '">' +
+      '<img src="' + ns.dep.photo + '" alt="' + ns.dep.nom + '"' +
+          ' title="' + ns.dep.nom + '"/>' +
       '<br/><small>NosDéputés.fr</small></a>' +
-      '<br/><span>' + ns.fmtfloat(ns.deputes[sel].months) + ' mois de mandat'
+      '<br/><span>' + ns.fmtfloat(ns.dep.months) + ' mois de mandat'
     );
+    $("#data table tr")[1].click();
+  };
+
+  ns.drawComparison = function(monthly){
+    var accessindic = function(d){
+        return d[ns.ind] ? d[ns.ind].total / (monthly ? d.months : 1) : 0;
+      },
+      min = d3.min(ns.deputesAr, accessindic),
+      max = d3.max(ns.deputesAr, accessindic),
+      data = d3.layout.histogram()
+        .bins(
+          d3.scale.linear()
+          .domain([min, max])
+          .range([0, 280])
+          .ticks(Math.min(Math.round(max - min), 10))
+        )(ns.deputesAr.map(accessindic))
+        .reverse();
+
+    nv.addGraph(function() {
+      var chart = nv.models.multiBarHorizontalChart()
+        .x(function(d) { return d.x + " -> " + (d.x + d.dx) })
+        .y(function(d) { return Math.sqrt(d.y) })
+        .barColor(function(d) {
+          var depval = accessindic(ns.dep);
+          return (depval >= d.x && depval < d.x + d.dx) ? "#00FF00" : "#4444FF";
+        })
+        .margin({top: 10, right: 20, bottom: 5, left: 110})
+        .showYAxis(false)
+        .showLegend(false)
+        .showControls(false)
+        .showValues(true)
+        .valueFormat(function(d){
+          var real = parseInt(d * d);
+          return real + " député" + (real > 1 ? "s" : "");
+        });
+
+      d3.select('#comparison svg').html('')
+        .datum([
+          {key: ' ', values: data}
+        ])
+        .transition().duration(350)
+        .call(chart);
+
+      nv.utils.windowResize(chart.update);
+    });
   };
 
   ns.init = function() {
@@ -168,8 +226,11 @@
       ns.downloadDeputes();
       ns.downloadSynthese();
     }
+    $("input[name=stats]").change(function(d){
+      ns.drawComparison($(this).val() === "month");
+    });
   };
 
   $(document).ready(ns.init);
-  
+
 })(window.synthese = window.synthese || {});

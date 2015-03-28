@@ -4,20 +4,33 @@
   <title>Synthèse globale sur toute la législature</title>
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link rel="stylesheet" type="text/css" href="css/jquery-ui-smoothness.css">
+  <link rel="stylesheet" type="text/css" href="css/nv.d3.min.css">
 </head>
 <body>
   <h1>Synthèse globale sur toute la législature</h1>
   <p id="loader">Chargement...</p>
-  <div id="menu" class="ui-widget" style="display: none">
-    <label for="deputes">Député : </label>
-    <input id="deputes">
+  <div id="content" style="display: none">
+    <div id="menu" class="ui-widget">
+      <label for="deputes">Député : </label>
+      <input id="deputes">
+    </div>
+    <h2 id="name"></h2>
+    <div id="row">
+      <div id="photo"></div>
+      <div id="data"></div>
+      <div id="comparison">
+        <svg></svg>
+        <label for="stats">Statistiques </label>
+        <input type="radio" name="stats" value="total" checked=checked>globales</input>
+        <input type="radio" name="stats" value="month">mensuelles</input>
+      </div>
+    </div>
   </div>
-  <h2 id="name"></h2>
-  <div id="photo"></div>
-  <div id="data"></div>
+  <div id="timeline"></div>
   <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.11.4.autocomplete.js"></script>
   <script type="text/javascript" src="js/d3-3.5.5.min.js"></script>
+  <script type="text/javascript" src="js/nv.d3-1.1.15b.min.js"></script>
   <script type="text/javascript" src="js/synthese.js"></script>
 </body>
 </html>

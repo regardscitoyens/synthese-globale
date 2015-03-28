@@ -1,32 +1,44 @@
 body{
   margin: auto;
-  width: 800px;
+  width: 900px;
   text-align: center;
+  font-size: 14px;
 }
 h1{
   font-size: 24px;
 }
 h2{
-  margin-bottom: 0;
+  float: left;
+  text-align: left;
+  margin-bottom: 0px;
+  margin-left: 30px;
+}
+#row{
+  clear:both;
+}
+#menu{
+  float: right;
+  font-size: 0.9em;
 }
 #deputes{
-  width: 350px;
-}
-p{
-  font-size: 14px;
+  width: 300px;
 }
 #photo{
   float: left;
   padding-top: 70px;
-  padding-left: 40px;
-  width: 210px;
+  width: 140px;
 }
 #data{
-  float: right;
-  width: 550px;
+  float: left;
+  width: 400px;
 }
 #data table{
   width: 100%;
+  font-size: 14px;
+}
+#data table tr.ind:hover{
+  background-color: yellow;
+  cursor: pointer;
 }
 #data table tr th{
   font-weight: normal;
@@ -34,4 +46,11 @@ p{
 }
 #data table tr td{
   text-align: center;
+}
+#comparison{
+  float: left;
+}
+#comparison svg{
+  width: 360px;
+  height: 300px;
 }

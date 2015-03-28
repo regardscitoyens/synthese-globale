@@ -8,7 +8,7 @@
 */
 (function (ns) {
 
-  ns.indicateurs = [
+  ns.indicateurs = [,
     ["semaines_presence", "Semaines d'activité"],
     ["commission_presences", "Commissions &mdash; réunions"],
     ["commission_interventions", "Commissions &mdash; interventions"],

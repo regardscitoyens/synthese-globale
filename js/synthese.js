@@ -94,13 +94,12 @@
         return ns.deputes[d].nom_de_famille + ' ' + ns.deputes[d].prenom +
                ' (' + ns.deputes[d].groupe_sigle + ')';
       });
-      document.getElementById("loader").style.display = "none";
-      document.getElementById("menu").style.display = "";
+      $("#loader").hide();
+      $("#menu").show();
   };
 
   ns.displayMP = function() {
-    var selec = document.getElementById("deputes"),
-      sel = selec.options[selec.selectedIndex].value;
+    var sel = $("#deputes").val();
     d3.select("#data").html("").append("ul")
       .selectAll("li")
       .data(ns.indicateurs)
@@ -123,6 +122,8 @@
       ns.downloadDeputes();
       ns.downloadSynthese();
     }
-  }();
+  };
+
+  $(document).ready(ns.init);
   
 })(window.synthese = window.synthese || {});

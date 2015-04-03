@@ -67,22 +67,27 @@
     ns.allmonths.push(m);
     setTimeout(function(){
       d3.json("//www.nosdeputes.fr/synthese/"+m+"/json", function(e, data){
-        if (data) data.deputes.forEach(function(d){
-          if (ns.deputes[d.depute.id] == undefined)
-            ns.deputes[d.depute.id] = {};
-          Object.keys(d.depute).forEach(function(k){
-            if (k != "id" && k != "nom" && k != "groupe") {
-              if (ns.deputes[d.depute.id][k] == undefined)
-                ns.deputes[d.depute.id][k] = {
-                  total: 0,
-                  months: {}
-                };
-              var v = parseInt(d.depute[k]);
-              ns.deputes[d.depute.id][k].total += v;
-              ns.deputes[d.depute.id][k].months[m] = v;
-            }
+        if (error) {
+          if (!last)
+            console.log("Error while downloading API synthese json data for " + m + ": " + error);
+        } else {
+          data.deputes.forEach(function(d){
+            if (ns.deputes[d.depute.id] == undefined)
+              ns.deputes[d.depute.id] = {};
+            Object.keys(d.depute).forEach(function(k){
+              if (k != "id" && k != "nom" && k != "groupe") {
+                if (ns.deputes[d.depute.id][k] == undefined)
+                  ns.deputes[d.depute.id][k] = {
+                    total: 0,
+                    months: {}
+                  };
+                var v = parseInt(d.depute[k]);
+                ns.deputes[d.depute.id][k].total += v;
+                ns.deputes[d.depute.id][k].months[m] = v;
+              }
+            });
           });
-        });
+        }
         // Enable interface after last load
         if (last) {
           ns.deputesAr = Object.keys(ns.deputes).map(function(d){

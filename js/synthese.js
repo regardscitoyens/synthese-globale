@@ -1,4 +1,5 @@
 /* TODO:
+- add text explicatif indicateurs from FAQ
 - fix mandats repris
 - filter time (from bottom histo?)
 - handle current mps only?
@@ -263,7 +264,6 @@
     ns.downloadDeputes();
     ns.downloadSynthese();
     $("input[name=stats]").change(function(d){
-      console.log(d, this);
       ns.drawComparison();
     });
   };

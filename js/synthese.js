@@ -214,7 +214,7 @@
           return (real ? real + " député" + (real > 1 ? "s" : "") : "");
         });
 
-      d3.select('#comparison svg').html('')
+      d3.select('#comparison svg')
         .datum([
           {key: ' ', values: data}
         ])
@@ -249,7 +249,7 @@
         .valueFormat(function(d){ return (d ? parseInt(d) : "") });
       chart.xAxis.tickFormat(function(d){ return d.replace(/^20(..)(..)/, "$2/$1") });
 
-      d3.select('#timeline svg').html('')
+      d3.select('#timeline svg')
         .datum([
           {key: ' ', values: data}
         ])

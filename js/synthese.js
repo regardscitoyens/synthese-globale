@@ -67,7 +67,7 @@
     ns.allmonths.push(m);
     setTimeout(function(){
       d3.json("//www.nosdeputes.fr/synthese/"+m+"/json", function(e, data){
-        data.deputes.forEach(function(d){
+        if (data) data.deputes.forEach(function(d){
           if (ns.deputes[d.depute.id] == undefined)
             ns.deputes[d.depute.id] = {};
           Object.keys(d.depute).forEach(function(k){

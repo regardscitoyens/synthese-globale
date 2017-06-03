@@ -46,7 +46,7 @@
 
   ns.deputes = {};
   ns.downloadDeputes = function(){
-    d3.json("http://www.nosdeputes.fr/deputes/json", function(error, data){
+    d3.json("//www.nosdeputes.fr/deputes/json", function(error, data){
       data.deputes.forEach(function(dep){
         var d = dep.depute;
         d.months = (ns.readdate(d.mandat_fin) - ns.readdate(d.mandat_debut)) / 2628000000;
@@ -66,7 +66,7 @@
             (String(start[0]).length < 2 ? "0" : "") + start[0];
     ns.allmonths.push(m);
     setTimeout(function(){
-      d3.json("http://www.nosdeputes.fr/synthese/"+m+"/json", function(e, data){
+      d3.json("//www.nosdeputes.fr/synthese/"+m+"/json", function(e, data){
         data.deputes.forEach(function(d){
           if (ns.deputes[d.depute.id] == undefined)
             ns.deputes[d.depute.id] = {};

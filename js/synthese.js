@@ -14,14 +14,14 @@
     ["commission_interventions", "Commissions &mdash; interventions"],
     ["hemicycle_interventions", "Hémicycle &mdash; interventions longues"],
     ["hemicycle_interventions_courtes", "Hémicycle &mdash; interventions courtes"],
-    ["amendements_signes", "Amendements signés"],
     ["amendements_proposes", "Amendements proposés"],
+    ["amendements_signes", "Amendements signés"],
     ["amendements_adoptes", "Amendements adoptés"],
     ["rapports", "Rapports"],
     ["propositions_ecrites", "Propositions de loi écrites"],
     ["propositions_signees", "Propositions de loi signées"],
-    ["questions_orales", "Questions orales"],
-    ["questions_ecrites", "Questions écrites"]
+    ["questions_ecrites", "Questions écrites"],
+    ["questions_orales", "Questions orales"]
   ];
 
   ns.accentMap = {
@@ -261,12 +261,38 @@
     });
   };
 
+  ns.isodate = function(d){
+    return d3.time.format("%Y-%m-%d")(d);
+  };
+
+  ns.downloadCSV = function(){
+    if (!ns.deputesAr.length) return;
+    var filename = [
+      "nosdeputes", "syntheseglobale",
+      ns.isodate(new Date())
+    ].join("_") + ".csv",
+      leg = this.legende,
+      data = ns.deputesAr.sort(function(a, b){
+        return d3.ascending(a.nom_de_famille, b.nom_de_famille);
+      }).map(function(d){
+        var cd = {};
+        ["nom", "nom_de_famille", "prenom", "sexe", "date_naissance", "lieu_naissance", "num_deptmt", "nom_circo", "num_circo", "mandat_debut", "mandat_fin", "ancien_depute", "groupe_sigle", "parti_ratt_financier", "place_en_hemicycle", "url_an", "id_an", "slug", "url_nosdeputes", "nb_mandats", "twitter"].forEach(function(k){
+          cd[k] = d[k];
+        });
+        ns.indicateurs.forEach(function(k){
+          cd[k[1].replace("&mdash;", "-")] = d[k[0]].total || 0;
+        });
+        cd["duree_mandat"] = Math.round(10*d.months)/10;
+        return cd;
+      });
+    saveAs(new Blob(d3.csv.format(data).split('\r'), {type: "text/csv; charset=utf-8"}), filename);
+  };
+
   ns.init = function(){
     ns.downloadDeputes();
     ns.downloadSynthese();
-    $("input[name=stats]").change(function(d){
-      ns.drawComparison();
-    });
+    $("input[name=stats]").change(ns.drawComparison);
+    $("#download").click(ns.downloadCSV);
   };
 
   $(document).ready(ns.init);

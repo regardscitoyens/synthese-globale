@@ -68,7 +68,7 @@
             (String(start[0]).length < 2 ? "0" : "") + start[0];
     ns.allmonths.push(m);
     setTimeout(function(){
-      d3.json("//www.nosdeputes.fr/synthese/"+m+"/json", function(e, data){
+      d3.json("//www.nosdeputes.fr/synthese/"+m+"/json", function(error, data){
         if (error) {
           if (!last)
             console.log("Error while downloading API synthese json data for " + m + ": " + error);
@@ -104,7 +104,7 @@
 
   ns.downloadSynthese = function(){
     var timeout = 0,
-        start = [6, 12],
+        start = [6, 17],
         end = [(new Date()).getMonth() + 1, (new Date()).getFullYear() - 2000];
     while (start[0] != end[0] || start[1] != end[1]) {
       ns.downloadMonthApi(start, timeout);

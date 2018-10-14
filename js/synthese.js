@@ -15,6 +15,7 @@
     ["hemicycle_interventions", "Hémicycle &mdash; interventions longues"],
     ["hemicycle_interventions_courtes", "Hémicycle &mdash; interventions courtes"],
     ["amendements_signes", "Amendements signés"],
+    ["amendements_proposes", "Amendements proposés"],
     ["amendements_adoptes", "Amendements adoptés"],
     ["rapports", "Rapports"],
     ["propositions_ecrites", "Propositions de loi écrites"],

@@ -249,6 +249,7 @@
         .x(function(d){ return d.label })
         .y(function(d){ return d.value })
         .staggerLabels(true)
+        .color(["#80758D"])
         .margin({top: 25, right: 5, bottom: 40, left: 25})
         .tooltips(false)
         .showYAxis(false)

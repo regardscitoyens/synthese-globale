@@ -95,7 +95,12 @@
           ns.deputesAr = Object.keys(ns.deputes).map(function(d){
             return ns.deputes[d];
           });
-          ns.dep = ns.deputesAr[parseInt(Math.random() * ns.deputesAr.length)];
+          if (window.location.hash)
+            ns.dep = ns.deputesAr.filter(function(d){
+              return d.slug === window.location.hash.replace(/^#/, '').toLowerCase();
+            })[0];
+          if (!ns.dep)
+            ns.dep = ns.deputesAr[parseInt(Math.random() * ns.deputesAr.length)];
           ns.buildSelectMenu();
         }
       });
@@ -178,6 +183,7 @@
       '<br/><span>' + ns.fmtfloat(ns.dep.months) + ' mois de mandat'
     );
     $("#data table tr#" + ns.ind).click();
+    window.location.hash = "#" + ns.dep.slug;
   };
 
   ns.drawComparison = function(){
